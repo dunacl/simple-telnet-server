@@ -1,0 +1,13 @@
+[Unit]
+Description=Telnet service for test IoT
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/tmp
+ExecStart=/usr/local/bin/server_iot
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
