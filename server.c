@@ -19,7 +19,7 @@ int authentication(int newsockfd, char buffer[256]) {
   int username, password = 0;
   char userbuffer[256];
   char passbuffer[256];
-
+  write(newsockfd, WELCOME_MESSAGE, sizeof(WELCOME_MESSAGE));
   write(newsockfd, PROMPT_USERNAME, sizeof(PROMPT_USERNAME));
   username = read( newsockfd, buffer, 256);
   strcpy(userbuffer, buffer);
@@ -38,26 +38,51 @@ int authentication(int newsockfd, char buffer[256]) {
 */
 void sendHelpScreen(int newsockfd) {
   char str1[16] = "Commands list\n\n";
-  char str2[26] = "help        Display help\n";
-  char str3[25] = "led on      Turn led on\n";
-  char str4[26] = "led off     Turn led off\n";
-  char str5[26] = "clear       Clear screen\n";
-  char str6[28] = "exit        Exit session\n\r\n";
+  char str2[26] = "clear       Clear screen\n";
+  char str3[28] = "exit        Exit session\n\r\n";
   write(newsockfd, str1, sizeof(str1));
   write(newsockfd, str2, sizeof(str2));
   write(newsockfd, str3, sizeof(str3));
-  write(newsockfd, str4, sizeof(str4));
-  write(newsockfd, str5, sizeof(str5));
-  write(newsockfd, str6, sizeof(str6));
+}
+
+/**
+ * Method to send fake logs to docket
+*/
+void sendFakeLog(int new_socket){
+  send(new_socket, FAKE_LOG, sizeof(FAKE_LOG), 0);
 }
 
 /**
  * Method used to print the welcome screen of our shell
  */
 void welcomeScreen(int new_socket){
-  write(new_socket, WELCOME_MESSAGE, sizeof(WELCOME_MESSAGE));
-  sendHelpScreen(new_socket);
+  //sendHelpScreen(new_socket);
   send(new_socket, DEFAULTPROMPT, sizeof(DEFAULTPROMPT), 0);
+}
+
+/**
+* Read file and send to socket
+*/
+
+void send_output_command(int newsockfd) {
+  FILE* filePointer;
+  int bufferLength = 40;
+  char *buffer = "";
+  int i, len;
+  filePointer = fopen("file.txt", "r");
+
+  while(fgets(buffer, bufferLength, filePointer)) {
+      len = strlen(buffer);
+      printf("\n%s len: %i\n", buffer, len);
+
+      for (i = 0; i < len; i++){
+        printf("%02X",buffer[i]);
+      }
+      write(newsockfd, buffer, sizeof(buffer));
+      //send(newsockfd, buffer, sizeof(buffer), 0);
+      
+  }
+  fclose(filePointer);
 }
 
 int main(int argc , char *argv[])
@@ -227,14 +252,9 @@ int main(int argc , char *argv[])
           if (strncmp("help", buffer, 4) == 0) {
             sendHelpScreen(sd);
           }
-          // led on
-          else if (strncmp("led on", buffer, 6) == 0) {
-            send(sd, "Turning LED ON\n", 15, 0);
-            send(sd, buffer, 6,0);
-          }
-          // led off
-          else if (strncmp("led off", buffer, 7) == 0) {
-            send(sd, "Turning LED OFF\n", 16, 0);
+          // Output command
+          if (strncmp("dsp brd;", buffer, 8) == 0) {
+            sendFakeLog(sd);
           }
           // clear
           else if (strncmp("clear", buffer, 4) == 0){
@@ -251,6 +271,7 @@ int main(int argc , char *argv[])
           }
           else {
             send(sd, COMANDO_INVALIDO, sizeof(COMANDO_INVALIDO), 0);
+            send(sd, buffer, strlen(buffer), 0);
           }
           //send(sd , buffer , strlen(buffer) , 0 );
           send(sd, DEFAULTPROMPT, sizeof(DEFAULTPROMPT), 0);

@@ -1,14 +1,14 @@
-telnet server
+telnet server emulator
+A replica UMG Responses
 ======
 
-A simple implementation of a telnet server for a raspberry pi linux system.
-It can control a led
+A simple implementation of a telnet server for linux system.
 
 make
-
 make install
 
-systemctl enable server_iot
+# Optional
+systemctl enable server
 
-systemctl start server_iot
+systemctl start server
 

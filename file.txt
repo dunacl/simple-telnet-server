@@ -1,0 +1,8 @@
+
+hola
+esto
+es
+un ejemplo de lineas
+con salidas
+varias
+adios
